@@ -4,7 +4,7 @@ declare( strict_types = 1 );
 
 namespace Sailing\ApiClient;
 
-require_once '../vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 use GuzzleHttp\Client;
 use Nette\Utils\Json;
@@ -101,7 +101,8 @@ final class ApiClient
 		$this->authToken = NULL;
 	}
 
-	private function communicationException ( ResponseInterface $response ): void {
+	private function communicationException ( ResponseInterface $response ): void
+	{
 		throw new ApiClientException( 'API error: ' . $response->getReasonPhrase(), $response->getStatusCode() );
 	}
 
@@ -236,6 +237,20 @@ final class ApiClient
 		}
 
 		return $response->getStatusCode() === 200;
+	}
+
+	public function getClubs (): array
+	{
+		$response = $this->client->get( $this->apiUrl . '/catalogs/clubs', [
+			'http_errors' => FALSE,
+			'synchronous' => TRUE,
+		] );
+
+		if ( $response->getStatusCode() !== 200 ) {
+			$this->communicationException( $response );
+		}
+
+		return Json::decode( $response->getBody()->getContents() );
 	}
 
 }
