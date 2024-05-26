@@ -1,5 +1,5 @@
 {
-    "name": "saling/api-client",
+    "name": "saling-cz/api-client",
     "description": "Sailing.cz API client library",
     "type": "library",
     "license": "Apache-2.0",
