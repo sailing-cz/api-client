@@ -45,3 +45,13 @@ $api->loginSystem( $systemToken, $systemSecret );
 
 $api->activateLicense( '2103-0847' );
 ```
+
+Změna e-mailu člena ČSJ:
+
+```php
+$api = new ApiClient( 'your-software/1.0', FALSE, '2103' );
+
+$api->loginSystem( $systemToken, $systemSecret );
+
+$api->setMemberDetails( '2103-0847', [ 'email' => 'sorm@milansorm.cz' ] );
+```
