@@ -39,7 +39,7 @@ final class PublicApiTest extends \Tester\TestCase
 		}
 	}
 
-	public function testActionGet (): void
+		public function testActionGet (): void
 	{
 		$apiClient = new ApiClient( 'nette-tester' );
 

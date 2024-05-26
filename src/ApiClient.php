@@ -21,13 +21,15 @@ final class ApiClient
 
 	private Client  $client;
 
-	private ?string $authToken = NULL;
+	private ?string $authToken   = NULL;
 
 	private string  $swIdent;
 
 	private string  $apiUrl;
 
 	private ?string $clubRegId;
+
+	private mixed   $lastResults = NULL;
 
 	public function __construct ( string $softwareIdentification, bool $devApi = FALSE, ?string $clubRegId = NULL )
 	{
@@ -52,13 +54,16 @@ final class ApiClient
 			'json'        => [ 'username' => $login, 'password' => $passwordEncrypted, 'software' => $this->swIdent ],
 		] );
 
+		$this->lastResults = NULL;
+
 		if ( $response->getStatusCode() !== 200 ) {
 			return FALSE;
 		}
 
 		$payload = Json::decode( $response->getBody()->getContents() );
 
-		$this->authToken = $payload->token;
+		$this->lastResults = $payload;
+		$this->authToken   = $payload->token;
 
 		return TRUE;
 	}
@@ -75,13 +80,16 @@ final class ApiClient
 			'json'        => [ 'system' => $systemToken, 'secret' => $secretEncrypted, 'software' => $this->swIdent ],
 		] );
 
+		$this->lastResults = NULL;
+
 		if ( $response->getStatusCode() !== 200 ) {
 			return FALSE;
 		}
 
 		$payload = Json::decode( $response->getBody()->getContents() );
 
-		$this->authToken = $payload->token;
+		$this->lastResults = $payload;
+		$this->authToken   = $payload->token;
 
 		return TRUE;
 	}
@@ -98,7 +106,8 @@ final class ApiClient
 			'headers'     => [ 'Authorization' => 'Bearer ' . $this->authToken ],
 		] );
 
-		$this->authToken = NULL;
+		$this->lastResults = NULL;
+		$this->authToken   = NULL;
 	}
 
 	private function communicationException ( ResponseInterface $response ): void
@@ -121,6 +130,8 @@ final class ApiClient
 			'json'        => [ 'secret' => $secretEncrypted, 'title' => $systemTokenTitle ],
 		] );
 
+		$this->lastResults = NULL;
+
 		if ( $response->getStatusCode() !== 200 ) {
 			$this->communicationException( $response );
 		}
@@ -128,6 +139,8 @@ final class ApiClient
 		$payload = Json::decode( $response->getBody()->getContents() );
 
 		$this->logout();
+
+		$this->lastResults = $payload;
 
 		return $payload->token;
 	}
@@ -144,11 +157,15 @@ final class ApiClient
 			'headers'     => [ 'Authorization' => 'Bearer ' . $this->authToken ],
 		] );
 
+		$this->lastResults = NULL;
+
 		if ( $response->getStatusCode() !== 200 ) {
 			$this->communicationException( $response );
 		}
 
-		return Json::decode( $response->getBody()->getContents() );
+		$this->lastResults = Json::decode( $response->getBody()->getContents() );
+
+		return $this->lastResults;
 	}
 
 	public function removeSystemToken ( string $token ): bool
@@ -162,6 +179,8 @@ final class ApiClient
 			'synchronous' => TRUE,
 			'headers'     => [ 'Authorization' => 'Bearer ' . $this->authToken ],
 		] );
+
+		$this->lastResults = NULL;
 
 		if ( $response->getStatusCode() !== 200 && $response->getStatusCode() !== 404 ) {
 			$this->communicationException( $response );
@@ -182,11 +201,15 @@ final class ApiClient
 			'headers'     => [ 'Authorization' => 'Bearer ' . $this->authToken ],
 		] );
 
+		$this->lastResults = NULL;
+
 		if ( $response->getStatusCode() !== 200 ) {
 			$this->communicationException( $response );
 		}
 
-		return Json::decode( $response->getBody()->getContents() );
+		$this->lastResults = Json::decode( $response->getBody()->getContents() );
+
+		return $this->lastResults;
 	}
 
 	public function deactivateLicense ( string $regId, ?string $clubRegId = NULL ): bool
@@ -206,6 +229,8 @@ final class ApiClient
 			'synchronous' => TRUE,
 			'headers'     => [ 'Authorization' => 'Bearer ' . $this->authToken ],
 		] );
+
+		$this->lastResults = NULL;
 
 		if ( $response->getStatusCode() !== 200 && $response->getStatusCode() !== 404 ) {
 			$this->communicationException( $response );
@@ -232,11 +257,48 @@ final class ApiClient
 			'headers'     => [ 'Authorization' => 'Bearer ' . $this->authToken ],
 		] );
 
+		$this->lastResults = NULL;
+
 		if ( $response->getStatusCode() !== 200 && $response->getStatusCode() !== 404 ) {
 			$this->communicationException( $response );
 		}
 
 		return $response->getStatusCode() === 200;
+	}
+
+	public function setMemberDetails ( string $regId, array $details, ?string $clubRegId = NULL ): bool
+	{
+		if ( $this->authToken === NULL ) {
+			throw new ApiClientException( 'You are not authorized.', 401 );
+		}
+
+		$clubRegId = $clubRegId ?? $this->clubRegId;
+
+		if ( $clubRegId === NULL ) {
+			return FALSE;
+		}
+
+		$response = $this->client->post( $this->apiUrl . '/evidence/members/' . $clubRegId . '/member/' . $regId . '/details', [
+			'http_errors' => FALSE,
+			'synchronous' => TRUE,
+			'headers'     => [ 'Authorization' => 'Bearer ' . $this->authToken ],
+			'body'        => json_encode( $details ),
+		] );
+
+		$this->lastResults = NULL;
+
+		if ( $response->getStatusCode() !== 200 && $response->getStatusCode() !== 404 ) {
+			$this->communicationException( $response );
+		}
+
+		$this->lastResults = Json::decode( $response->getBody()->getContents() );
+
+		return $response->getStatusCode() === 200;
+	}
+
+	public function getLastResults (): array
+	{
+		return $this->lastResults;
 	}
 
 	public function getClubs (): array
@@ -250,7 +312,9 @@ final class ApiClient
 			$this->communicationException( $response );
 		}
 
-		return Json::decode( $response->getBody()->getContents() );
+		$this->lastResults = Json::decode( $response->getBody()->getContents() );
+
+		return $this->lastResults;
 	}
 
 }
