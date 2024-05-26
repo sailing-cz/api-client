@@ -4,7 +4,7 @@ declare( strict_types = 1 );
 
 namespace Sailing\ApiClient;
 
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once '../vendor/autoload.php';
 
 use GuzzleHttp\Client;
 use Nette\Utils\Json;
