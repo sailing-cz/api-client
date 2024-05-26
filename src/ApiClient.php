@@ -42,7 +42,7 @@ final class ApiClient
 		$this->clubRegId = $clubRegId;
 	}
 
-	private function loginUser ( string $login, string $password ): bool
+	public function loginUser ( string $login, string $password ): bool
 	{
 		$this->authToken = NULL;
 
@@ -68,7 +68,7 @@ final class ApiClient
 		return TRUE;
 	}
 
-	private function loginSystem ( string $systemToken, string $secret ): bool
+	public function loginSystem ( string $systemToken, string $secret ): bool
 	{
 		$this->authToken = NULL;
 
@@ -94,7 +94,7 @@ final class ApiClient
 		return TRUE;
 	}
 
-	private function logout (): void
+	public function logout (): void
 	{
 		if ( $this->authToken === NULL ) {
 			return;
