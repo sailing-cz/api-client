@@ -301,9 +301,9 @@ final class ApiClient
 		return $this->lastResults;
 	}
 
-	public function getClubs (): array
+	private function getCatalog ( string $catalog ): array
 	{
-		$response = $this->client->get( $this->apiUrl . '/catalogs/clubs', [
+		$response = $this->client->get( $this->apiUrl . '/catalogs/' . $catalog, [
 			'http_errors' => FALSE,
 			'synchronous' => TRUE,
 		] );
@@ -315,6 +315,46 @@ final class ApiClient
 		$this->lastResults = Json::decode( $response->getBody()->getContents() );
 
 		return $this->lastResults;
+	}
+
+	public function getClubs (): array
+	{
+		return $this->getCatalog( 'clubs' );
+	}
+
+	public function getVenues (): array
+	{
+		return $this->getCatalog( 'venues' );
+	}
+
+	public function getClasses (): array
+	{
+		return $this->getCatalog( 'classes' );
+	}
+
+	public function getRefereeTitles (): array
+	{
+		return $this->getCatalog( 'refereeTitles' );
+	}
+
+	public function getCoachTitles (): array
+	{
+		return $this->getCatalog( 'coachTitles' );
+	}
+
+	public function getRefereeRoles (): array
+	{
+		return $this->getCatalog( 'refereeRoles' );
+	}
+
+	public function getLifeguardRoles (): array
+	{
+		return $this->getCatalog( 'lifeguardRoles' );
+	}
+
+	public function getCompetitors (): array
+	{
+		return $this->getCatalog( 'members' );
 	}
 
 }
