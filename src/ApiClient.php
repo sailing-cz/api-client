@@ -112,7 +112,7 @@ final class ApiClient
 
 	private function communicationException ( ResponseInterface $response ): void
 	{
-		throw new ApiClientException( 'API error: ' . $response->getReasonPhrase(), $response->getStatusCode() );
+		throw new ApiClientException( 'API error: ' . $response->getReasonPhrase() . PHP_EOL . $response->getBody()->getContents(), $response->getStatusCode() );
 	}
 
 	public function createSystemToken ( string $login, string $password, string $newSecret, string $systemTokenTitle ): string
@@ -325,7 +325,8 @@ final class ApiClient
 		return $response->getStatusCode() === 200;
 	}
 
-	public function getLastResults (): array
+	/** @return array|stdClass */
+	public function getLastResults (): mixed
 	{
 		return $this->lastResults;
 	}
