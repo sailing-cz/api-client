@@ -296,6 +296,35 @@ final class ApiClient
 		return $response->getStatusCode() === 200;
 	}
 
+	public function addMember ( array $details, ?string $clubRegId = NULL ): bool {
+		if ( $this->authToken === NULL ) {
+			throw new ApiClientException( 'You are not authorized.', 401 );
+		}
+
+		$clubRegId = $clubRegId ?? $this->clubRegId;
+
+		if ( $clubRegId === NULL ) {
+			return FALSE;
+		}
+
+		$response = $this->client->put( $this->apiUrl . '/evidence/members/' . $clubRegId, [
+			'http_errors' => FALSE,
+			'synchronous' => TRUE,
+			'headers'     => [ 'Authorization' => 'Bearer ' . $this->authToken ],
+			'body'        => json_encode( $details ),
+		] );
+
+		$this->lastResults = NULL;
+
+		if ( $response->getStatusCode() !== 200 && $response->getStatusCode() !== 404 ) {
+			$this->communicationException( $response );
+		}
+
+		$this->lastResults = Json::decode( $response->getBody()->getContents() );
+
+		return $response->getStatusCode() === 200;
+	}
+
 	public function getLastResults (): array
 	{
 		return $this->lastResults;
